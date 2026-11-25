@@ -1,43 +1,62 @@
 # ☁️ CloudCraft – Two-Tier WordPress Architecture on AWS
 
 <p align="center">
-  <b>A Cloud-Based WordPress Application Using Amazon EC2 and Amazon RDS</b>
+  <img src="architecture.png" alt="CloudCraft AWS Architecture" width="850">
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/AWS-Cloud-orange?logo=amazonaws&logoColor=white" />
-  <img src="https://img.shields.io/badge/OS-Amazon%20Linux%202023-blue" />
-  <img src="https://img.shields.io/badge/Web%20Server-Apache-red?logo=apache" />
-  <img src="https://img.shields.io/badge/Database-MySQL%208.4-blue?logo=mysql" />
-  <img src="https://img.shields.io/badge/CMS-WordPress-21759B?logo=wordpress" />
+  <b>A Two-Tier WordPress Application Deployed on Amazon Web Services</b>
 </p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/AWS-Cloud-orange?logo=amazonaws&logoColor=white">
+  <img src="https://img.shields.io/badge/OS-Amazon%20Linux%202023-blue">
+  <img src="https://img.shields.io/badge/Web%20Server-Apache-red?logo=apache">
+  <img src="https://img.shields.io/badge/Database-MySQL%208.4-blue?logo=mysql">
+  <img src="https://img.shields.io/badge/CMS-WordPress-21759B?logo=wordpress">
+</p>
+
+---
 
 ## 📌 Project Overview
 
-**CloudCraft** is a two-tier WordPress application deployed on Amazon Web Services (AWS). The project demonstrates how to host a WordPress website using Amazon EC2 as the web/application server and Amazon RDS as the managed database service.
+**CloudCraft** is a two-tier WordPress web application deployed on Amazon Web Services (AWS).
+
+The project demonstrates how to deploy and configure a WordPress website using Amazon EC2 as the web/application server and Amazon RDS as the managed database service.
 
 The application tier runs on Amazon Linux 2023 with Apache, PHP, and WordPress, while the database tier uses Amazon RDS with MySQL 8.4.
 
-This project focuses on cloud infrastructure deployment, database connectivity, Linux administration, security group configuration, and application troubleshooting.
+The EC2 instance processes incoming HTTP requests and communicates with the RDS database through a secure network connection.
 
-## 🏗️ Architecture
+This project focuses on practical cloud computing, Linux administration, database management, AWS networking, and application troubleshooting.
+
+## 🏗️ AWS Architecture
 
 The project follows a two-tier architecture:
 
-**User → Amazon EC2 → Amazon RDS**
+**End User → Amazon EC2 → Amazon RDS**
 
-- **Web/Application Tier:** Amazon EC2 running Amazon Linux 2023, Apache, PHP, and WordPress.
-- **Database Tier:** Amazon RDS running MySQL 8.4.
-- **Communication:** WordPress connects to the RDS database through MySQL TCP port 3306.
-- **Security:** Security groups restrict database connectivity to the EC2 application server.
+### Architecture Components
 
-![CloudCraft Architecture](screenshots/architecture.png)
+| Tier | AWS Service | Components |
+|---|---|---|
+| Web/Application Tier | Amazon EC2 | Amazon Linux 2023, Apache, PHP, WordPress |
+| Database Tier | Amazon RDS | MySQL 8.4 |
+
+### Request Flow
+
+1. A user accesses the WordPress website through a browser.
+2. The request reaches the Amazon EC2 instance over HTTP.
+3. Apache processes the request using PHP and WordPress.
+4. WordPress communicates with Amazon RDS over MySQL port 3306.
+5. The database returns the required information to the application.
 
 ## 🛠️ Technology Stack
 
 | Technology | Purpose |
 |---|---|
-| AWS EC2 | Application hosting |
+| Amazon Web Services | Cloud infrastructure |
+| Amazon EC2 | Application hosting |
 | Amazon Linux 2023 | Operating system |
 | Apache HTTP Server | Web server |
 | PHP | Application runtime |
@@ -46,126 +65,347 @@ The project follows a two-tier architecture:
 | MySQL 8.4 | Relational database |
 | AWS Security Groups | Network access control |
 
-## ✨ Project Objectives
+## 🎯 Project Objectives
 
-- Deploy WordPress on Amazon EC2.
+- Deploy a WordPress website on Amazon EC2.
 - Configure Apache and PHP.
 - Create and configure an Amazon RDS MySQL database.
 - Establish secure EC2-to-RDS connectivity.
 - Configure WordPress database settings.
 - Understand AWS networking and security groups.
 - Practice Linux administration and SQL commands.
-- Troubleshoot common application and database errors.
+- Troubleshoot application and database connectivity issues.
 
-## 🚀 Deployment Workflow
+---
 
-### 1. Launch EC2 Instance
-- Create an EC2 instance using Amazon Linux 2023.
-- Configure the required security group.
-- Allow SSH access from a trusted IP.
-- Allow HTTP traffic on port 80 when required.
+## 🚀 Deployment Guide
 
-### 2. Install Required Packages
+### Step 1: Launch an EC2 Instance
+
+1. Open the AWS Management Console.
+2. Navigate to Amazon EC2.
+3. Launch an instance using Amazon Linux 2023.
+4. Select an appropriate instance type.
+5. Configure the security group.
+
+**Suggested inbound rules:**
+
+| Type | Port | Source |
+|---|---|---|
+| SSH | 22 | Trusted administrator IP |
+| HTTP | 80 | 0.0.0.0/0 |
+
+### Step 2: Update Packages and Install Required Software
+
+Connect to the EC2 instance and execute:
 
 ```bash
 sudo dnf update -y
+
 sudo dnf install -y httpd php php-mysqlnd php-fpm mariadb105
 ```
 
-### 3. Start Apache and PHP-FPM
+Verify the installations:
+
+```bash
+httpd -v
+php -v
+mysql --version
+```
+
+### Step 3: Start Apache and PHP-FPM
 
 ```bash
 sudo systemctl enable --now httpd
+
 sudo systemctl enable --now php-fpm
 ```
 
-### 4. Configure Amazon RDS
-- Create an Amazon RDS MySQL 8.4 database.
-- Configure the database identifier and credentials.
-- Set up the VPC and DB subnet group.
-- Configure database connectivity.
+Check service status:
 
-### 5. Configure Security Groups
+```bash
+sudo systemctl status httpd
 
-Allow MySQL traffic on port `3306` from the EC2 security group only.
+sudo systemctl status php-fpm
+```
 
-**Important:** Never expose the database port publicly using `0.0.0.0/0`.
+### Step 4: Create an Amazon RDS Database
 
-### 6. Configure WordPress
+1. Open Amazon RDS in the AWS Console.
+2. Select Create Database.
+3. Choose MySQL as the database engine.
+4. Select MySQL 8.4.
+5. Configure the DB identifier and credentials.
+6. Configure the VPC and DB subnet group.
+7. Wait until the database status becomes Available.
+8. Copy the RDS endpoint for application configuration.
 
-Download and install WordPress on the EC2 instance.
+**Important:** Keep database credentials and sensitive endpoints private.
 
-Configure the database connection in `wp-config.php` using the RDS endpoint and database credentials.
+### Step 5: Configure RDS Security Group
 
-### 7. Verify Application
+Add the following inbound rule to the RDS security group:
 
-Access the WordPress website through the EC2 public IPv4 address and complete the WordPress installation wizard.
+| Type | Port | Source |
+|---|---|---|
+| MySQL/Aurora | 3306 | EC2 Security Group |
+
+Allow database traffic only from the EC2 application server security group.
+
+Do not expose MySQL port 3306 publicly.
+
+### Step 6: Connect to RDS and Create Database
+
+Connect from the EC2 instance:
+
+```bash
+mysql -h YOUR_RDS_ENDPOINT -P 3306 -u MASTER_USERNAME -p
+```
+
+Create the WordPress database:
+
+```sql
+CREATE DATABASE wordpress;
+
+CREATE USER 'wpuser'@'%'
+IDENTIFIED BY 'YOUR_STRONG_PASSWORD';
+
+GRANT ALL PRIVILEGES ON wordpress.*
+TO 'wpuser'@'%';
+
+SHOW DATABASES;
+
+USE wordpress;
+
+SELECT DATABASE();
+
+EXIT;
+```
+
+Replace all placeholders with your own values.
+
+### Step 7: Download and Install WordPress
+
+```bash
+cd /var/www/html
+
+sudo wget https://wordpress.org/latest.tar.gz
+
+sudo tar -xzf latest.tar.gz
+
+sudo cp -a wordpress/. /var/www/html/
+
+sudo rm -rf wordpress latest.tar.gz
+```
+
+### Step 8: Configure WordPress Database Connection
+
+Create the configuration file:
+
+```bash
+cd /var/www/html
+
+sudo cp wp-config-sample.php wp-config.php
+
+sudo nano wp-config.php
+```
+
+Configure the database settings:
+
+```php
+define('DB_NAME', 'wordpress');
+
+define('DB_USER', 'wpuser');
+
+define('DB_PASSWORD', 'YOUR_STRONG_PASSWORD');
+
+define('DB_HOST', 'YOUR_RDS_ENDPOINT:3306');
+
+define('DB_CHARSET', 'utf8mb4');
+
+define('DB_COLLATE', '');
+```
+
+Replace the placeholders with your actual database configuration.
+
+**Never upload wp-config.php or real credentials to GitHub.**
+
+### Step 9: Configure Permissions and Restart Services
+
+```bash
+sudo chown -R apache:apache /var/www/html
+
+sudo find /var/www/html -type d -exec chmod 755 {} \;
+
+sudo find /var/www/html -type f -exec chmod 644 {} \;
+
+sudo chmod 640 /var/www/html/wp-config.php
+
+sudo systemctl restart php-fpm
+
+sudo systemctl restart httpd
+```
+
+### Step 10: Access the WordPress Website
+
+Open the following address in your browser:
+
+```text
+http://YOUR_EC2_PUBLIC_IP
+```
+
+Complete the WordPress installation wizard and configure the website title as **CloudCraft**.
+
+For production deployments, configure HTTPS.
+
+---
 
 ## 📸 Project Screenshots
 
+The following screenshots demonstrate the AWS infrastructure, database configuration, terminal output, and deployed WordPress website.
+
 ### 1. AWS Architecture
-![Architecture](screenshots/architecture.png)
+
+![CloudCraft AWS Architecture](architecture.png)
 
 ### 2. AWS EC2 Console
-![EC2 Console](screenshots/aws-console.png)
 
-### 3. RDS Database Console
-![RDS Console](screenshots/rds-console.png)
+![AWS EC2 Console](aws-console.png)
+
+### 3. Amazon RDS Database Console
+
+![Amazon RDS Console](rds-console.png)
 
 ### 4. Database Terminal
-![Database Terminal](screenshots/terminal-db.png)
+
+![MySQL Database Terminal](terminal-db.png)
 
 ### 5. Live WordPress Website
-![CloudCraft Website](screenshots/live-site.png)
+
+![CloudCraft WordPress Website](live-site.png)
+
+---
 
 ## 🔧 Troubleshooting & Challenges
 
-During implementation, several common configuration issues were explored:
+During the implementation, I explored and resolved several common configuration issues.
 
-- **MySQL Error 1045:** Database authentication and access denied issues.
-- **MySQL Error 1396:** Handling an already existing database user.
-- **PHP HTTP 500 Error:** Identifying and correcting PHP configuration syntax errors.
-- **Database Connectivity:** Verifying RDS endpoints, security groups, and port configuration.
-- **Linux Package Management:** Using `dnf` on Amazon Linux 2023.
+### 1. Amazon Linux 2023 Package Management
 
-These troubleshooting exercises helped develop practical cloud administration and debugging skills.
+Amazon Linux 2023 uses `dnf` for package management.
+
+```bash
+sudo dnf update -y
+
+sudo dnf install -y httpd php php-mysqlnd php-fpm mariadb105
+```
+
+### 2. MySQL Error 1045 – Access Denied
+
+Possible causes:
+
+- Incorrect database username or password.
+- Incorrect RDS endpoint.
+- Missing database privileges.
+- Database security group configuration issues.
+
+Verify the connection:
+
+```bash
+mysql -h YOUR_RDS_ENDPOINT -P 3306 -u wpuser -p
+```
+
+### 3. MySQL Error 1396 – CREATE USER Failed
+
+This error can occur when the database user already exists.
+
+Check existing users:
+
+```sql
+SELECT user, host
+FROM mysql.user
+WHERE user = 'wpuser';
+```
+
+If the account already exists, update its password if authorized:
+
+```sql
+ALTER USER 'wpuser'@'%'
+IDENTIFIED BY 'YOUR_STRONG_PASSWORD';
+```
+
+### 4. PHP HTTP 500 Error
+
+A PHP syntax error in `wp-config.php` can cause an HTTP 500 error.
+
+Check PHP syntax:
+
+```bash
+php -l /var/www/html/wp-config.php
+```
+
+Check service logs:
+
+```bash
+sudo journalctl -u php-fpm -n 100 --no-pager
+
+sudo tail -n 100 /var/log/httpd/error_log
+```
+
+Correct the configuration and restart services:
+
+```bash
+sudo systemctl restart php-fpm
+
+sudo systemctl restart httpd
+```
+
+**Key Learning:** Checking application syntax and service logs helps identify configuration issues without unnecessarily rebuilding cloud infrastructure.
+
+---
 
 ## 🔐 Security Best Practices
 
 - Restrict SSH access to trusted IP addresses.
 - Keep the RDS database private.
-- Allow database traffic only from the EC2 security group.
-- Never upload AWS credentials, passwords, private keys, or sensitive configuration files to GitHub.
-- Keep `wp-config.php` out of public repositories.
+- Allow MySQL traffic only from the EC2 security group.
+- Never upload AWS credentials or private keys to GitHub.
+- Keep `wp-config.php` and sensitive configuration files out of public repositories.
+- Use strong and unique database passwords.
 - Follow the principle of least privilege.
+- Keep the operating system and WordPress updated.
 - Use HTTPS for production deployments.
-- Regularly update system packages and WordPress.
+- Regularly review AWS permissions and security groups.
 
 ## 💰 Cost Optimization
 
-After testing the application and verifying EC2-to-RDS connectivity, the EC2 instances were terminated to reduce ongoing compute costs.
+After testing the CloudCraft application and verifying EC2-to-RDS connectivity, the EC2 instances were terminated to reduce ongoing compute costs.
 
-Unused AWS resources should also be reviewed to avoid unnecessary charges, including:
+Unused AWS resources should also be reviewed, including:
 
-- EBS volumes
+- EBS Volumes
 - Snapshots
-- Elastic IP addresses
-- Amazon RDS instances
+- Elastic IP Addresses
+- Amazon RDS Instances
 
-## 🎯 Key Learning Outcomes
+**Note:** Terminating EC2 instances does not automatically remove all associated resources. Amazon RDS and retained storage may continue to incur charges.
 
-Through this project, I gained practical experience in:
+## 📚 Key Learning Outcomes
+
+Through this hands-on project, I gained practical experience in:
 
 - AWS EC2 provisioning and management.
 - Amazon Linux 2023 administration.
 - Apache and PHP configuration.
 - WordPress deployment.
 - Amazon RDS MySQL database management.
-- SQL user and database administration.
+- SQL database and user administration.
 - AWS Security Group configuration.
-- Cloud networking and database connectivity.
+- EC2-to-RDS connectivity.
 - Linux and application troubleshooting.
 - Cloud security and cost optimization.
+
+---
 
 ## 👩‍💻 Author
 
@@ -175,12 +415,12 @@ Cloud & DevOps Enthusiast
 
 **Project:** CloudCraft – Two-Tier WordPress Architecture on AWS
 
-**GitHub:** [Your GitHub Profile](https://github.com/your-username)
+**GitHub:** [shrutigoyal7100-cell](https://github.com/shrutigoyal7100-cell)
 
 ---
 
 <p align="center">
   <b>Built with AWS, Linux, Apache, PHP, MySQL & WordPress.</b>
-  <br/>
+  <br><br>
   Learning Cloud Computing & DevOps Through Hands-On Projects.
 </p>
